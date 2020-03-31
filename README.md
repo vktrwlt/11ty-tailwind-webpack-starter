@@ -1,6 +1,6 @@
 # Eleventy + Tailwind + Webpack starter
 
-Another is a minimal starting point for Eleventy projects using
+Another minimal starting point for Eleventy projects using
 
 Features:
 
