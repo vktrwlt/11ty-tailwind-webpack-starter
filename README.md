@@ -1,4 +1,4 @@
-# Eleventy + Tailwind SCSS starter
+# Eleventy + Tailwind + Webpack starter
 
 Another is a minimal starting point for Eleventy projects using
 
