@@ -1,5 +1,7 @@
 # Eleventy + Tailwind + Webpack starter
 
+Check it out at [11ty-tailwind-webpack-starter](https://11ty-tailwind-webpack-starter.netlify.com/)
+
 Another minimal starting point for Eleventy projects using
 
 Features:
