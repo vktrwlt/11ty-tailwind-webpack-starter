@@ -1,45 +1,46 @@
 const path = require("path")
+const paths = require("./paths")
 const fs = require("fs")
 const projectVars = require("../src/11ty/_data/project")
-const paths = require("./paths")
+const pluginPWA = require("eleventy-plugin-pwa")
 module.exports = function (eleventyConfig) {
-	const manifestPath = path.resolve(paths.dist, "manifest.json")
+	const assetsPath = path.resolve(paths.dist, "assets/assets.json")
 
-	// if production get manifest with hashes
-	const manifest = projectVars.development
+	// if production get assets with hashes
+	const assets = projectVars.development
 		? {
-				"main.js": "/js/main.js",
-				"main.css": "/css/main.css",
+				"main.js": "/assets/js/main.js",
+				"main.css": "/assets/css/main.css",
 		  }
-		: JSON.parse(fs.readFileSync(manifestPath, { encoding: "utf8" }))
+		: JSON.parse(fs.readFileSync(assetsPath, { encoding: "utf8" }))
 
 	// Layout aliases
 	eleventyConfig.addLayoutAlias("default", "layouts/default.njk")
 
-	// Adds a universal shortcode to embed bundled CSS. In Nunjack templates: {% cssBundle %}
-	eleventyConfig.addShortcode("cssBundle", function () {
-		return manifest["main.css"]
+	// Adds a universal shortcode to embed bundled CSS. In Nunjack templates: {% mainCssBundle %}
+	eleventyConfig.addShortcode("mainCssBundle", function () {
+		return assets["main.css"]
 	})
 
-	// Adds a universal shortcode to embed bundled JS. In Nunjack templates: {% jsBundle %}
-	eleventyConfig.addShortcode("jsBundle", function () {
-		return manifest["main.js"]
+	// Adds a universal shortcode to embed bundled JS. In Nunjack templates: {% mainJsBundle %}
+	eleventyConfig.addShortcode("mainJsBundle", function () {
+		return assets["main.js"]
 	})
-
-	// Reload the page every time the JS/CSS are changed.
-	eleventyConfig.setBrowserSyncConfig({ files: [manifestPath] })
-
-	// Include our static assets for every build
-	eleventyConfig.addPassthroughCopy({ "src/images": "images" })
-	eleventyConfig.addPassthroughCopy("robots.txt")
 
 	// minify the html output when running in prod
 	if (projectVars.production) {
+		eleventyConfig.addPlugin(pluginPWA)
 		eleventyConfig.addTransform(
 			"htmlmin",
 			require("../build/scripts/minify-html")
 		)
 	}
+
+	// Copy `src/static/` to `dist/`
+	eleventyConfig.addPassthroughCopy({ "src/static/": "/" })
+	eleventyConfig.addPassthroughCopy({
+		"src/assets/images": "/assets/images",
+	})
 
 	return {
 		dir: {

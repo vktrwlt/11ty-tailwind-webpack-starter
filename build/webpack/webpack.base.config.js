@@ -1,25 +1,20 @@
 const path = require("path")
-const ManifestPlugin = require("webpack-manifest-plugin")
-const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const paths = require("../../config/paths")
-const autoprefixer = require("autoprefixer")
-const tailwind = require("tailwindcss")(
-	path.resolve(paths.config, "tailwind.config.js")
-)
-const purgecss = require("@fullhuman/postcss-purgecss")({
-	content: [path.resolve(paths.src, "**/*.njk")],
-	defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
-})
-
-const isProduction = process.env.NODE_ENV === "production"
+const ImageminWebpackPlugin = require("imagemin-webpack-plugin").default
+const ImageminWebP = require("imagemin-webp")
+const CopyWebpackPlugin = require("copy-webpack-plugin")
+const WebpackAssetsManifest = require("webpack-assets-manifest")
 
 module.exports = {
-	entry: [
-		path.resolve(paths.src, "js/main.js"),
-		path.resolve(paths.src, "scss/main.scss"),
-	],
+	entry: {
+		main: [
+			path.resolve(paths.srcAssets, "js/main.js"),
+			path.resolve(paths.srcAssets, "scss/main.scss"),
+		],
+		sw: path.resolve(paths.srcAssets, "js/sw.js"),
+	},
 	output: {
-		path: paths.dist,
+		path: path.resolve(paths.dist),
 	},
 	module: {
 		rules: [
@@ -33,29 +28,26 @@ module.exports = {
 					},
 				},
 			},
-			{
-				test: [/.css$|.scss$/],
-				use: [
-					MiniCssExtractPlugin.loader,
-					{ loader: "css-loader", options: { importLoaders: 1 } },
-					{
-						loader: "postcss-loader",
-						options: {
-							ident: "postcss",
-							parser: "postcss-scss",
-							plugins: () => [
-								tailwind,
-								autoprefixer,
-								...(isProduction ? [purgecss] : []),
-							],
-						},
-					},
-					{
-						loader: "sass-loader",
-					},
-				],
-			},
 		],
 	},
-	plugins: [new ManifestPlugin({ publicPath: "/" })],
+	plugins: [
+		new WebpackAssetsManifest({
+			output: path.resolve(paths.dist, "assets/assets.json"),
+			publicPath: "/",
+			writeToDisk: true,
+		}),
+		new CopyWebpackPlugin([
+			{
+				from: "./src/assets/images/**/*.{png,jpg,jpeg}",
+				to: "./assets/images/[name].webp",
+			},
+		]),
+		new ImageminWebpackPlugin({
+			plugins: [
+				ImageminWebP({
+					quality: 75,
+				}),
+			],
+		}),
+	],
 }

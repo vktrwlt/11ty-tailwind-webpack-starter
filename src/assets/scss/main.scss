@@ -1,0 +1,7 @@
+@charset "UTF-8";
+@import "./core/generic_boxsizing";
+@import "./vendors/tailwind";
+
+li {
+	@apply text-xl ml-4 my-2;
+}
